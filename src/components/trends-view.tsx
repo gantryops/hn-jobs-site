@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { dataQueries, type TrendSeries } from "@/lib/data"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -17,14 +18,37 @@ import {
 
 import { CHART_COLORS } from "@/lib/colors"
 
+const VALID_TABS = new Set(["tech", "roles", "overview"])
+const DEFAULT_TAB = "tech"
+
+function getTabFromHash(): string {
+  if (typeof window === "undefined") return DEFAULT_TAB
+  const hash = window.location.hash.slice(1)
+  return VALID_TABS.has(hash) ? hash : DEFAULT_TAB
+}
+
 export function TrendsView() {
+  const [tab, setTab] = useState(DEFAULT_TAB)
   const { data: techTrends } = useQuery(dataQueries.techTrends)
   const { data: roleTrends } = useQuery(dataQueries.roleTrends)
   const { data: history } = useQuery(dataQueries.history)
 
+  // Sync tab state from hash on mount and popstate
+  useEffect(() => {
+    setTab(getTabFromHash())
+    const onHashChange = () => setTab(getTabFromHash())
+    window.addEventListener("hashchange", onHashChange)
+    return () => window.removeEventListener("hashchange", onHashChange)
+  }, [])
+
+  function onTabChange(value: string) {
+    setTab(value)
+    window.history.replaceState(null, "", `#${value}`)
+  }
+
   return (
     <div className="space-y-8">
-      <Tabs defaultValue="tech">
+      <Tabs value={tab} onValueChange={onTabChange}>
         <TabsList>
           <TabsTrigger value="tech">Technologies</TabsTrigger>
           <TabsTrigger value="roles">Roles</TabsTrigger>
@@ -47,7 +71,7 @@ export function TrendsView() {
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={400}>
-                  <LineChart data={history.runs} margin={{ right: 80 }}>
+                  <LineChart data={history.runs} margin={{ right: 32 }}>
                     <XAxis dataKey="date" tick={{ fontSize: 12 }} />
                     <YAxis yAxisId="count" orientation="left" />
                     <YAxis yAxisId="pct" orientation="right" domain={[0, 100]} unit="%" />
