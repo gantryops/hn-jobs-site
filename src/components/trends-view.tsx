@@ -186,8 +186,11 @@ function TrendChart({
             <Tooltip
               content={({ payload, label }) => {
                 if (!payload?.length) return null
-                // Sort by value descending to match visual stacking
-                const sorted = [...payload].sort((a, b) => (b.value as number) - (a.value as number))
+                // Use the same fixed ranking (by latest count) as the area stacking
+                const rankOrder = ranked.map((r) => r.name)
+                const sorted = [...payload].sort(
+                  (a, b) => rankOrder.indexOf(a.name as string) - rankOrder.indexOf(b.name as string),
+                )
                 return (
                   <div className="rounded-md border border-border bg-card p-3 shadow-md">
                     <p className="mb-2 text-xs font-medium">{label}</p>
