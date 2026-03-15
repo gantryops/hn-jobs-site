@@ -15,7 +15,6 @@ export function TechChart({ data, onBarClick, selectedBar }: TechChartProps) {
       <BarChart
         data={data}
         layout="vertical"
-        margin={{ top: 5, right: 20, bottom: 5, left: 10 }}
         onClick={(state) => {
           if (state?.activeLabel != null && onBarClick) {
             onBarClick(String(state.activeLabel))
@@ -23,7 +22,7 @@ export function TechChart({ data, onBarClick, selectedBar }: TechChartProps) {
         }}
       >
         <XAxis type="number" />
-        <YAxis type="category" dataKey="name" width={110} tick={{ fontSize: 12 }} />
+        <YAxis type="category" dataKey="name" width={"auto"} tick={{ fontSize: 12 }} />
         <Tooltip
           formatter={(value, _name, props) => {
             const pct = (props.payload as { pct?: number })?.pct

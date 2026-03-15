@@ -71,7 +71,7 @@ export function TrendsView() {
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={400}>
-                  <LineChart data={history.runs} margin={{ right: 32 }}>
+                  <LineChart data={history.runs}>
                     <XAxis dataKey="date" tick={{ fontSize: 12 }} />
                     <YAxis yAxisId="count" orientation="left" />
                     <YAxis yAxisId="pct" orientation="right" domain={[0, 100]} unit="%" />
@@ -181,7 +181,7 @@ function TrendChart({
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={400}>
-          <AreaChart data={chartData} margin={{ right: 20 }}>
+          <AreaChart data={chartData}>
             <XAxis dataKey="date" tick={{ fontSize: 12 }} />
             <YAxis />
             <Tooltip
