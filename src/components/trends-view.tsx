@@ -28,14 +28,13 @@ function getTabFromHash(): string {
 }
 
 export function TrendsView() {
-  const [tab, setTab] = useState(DEFAULT_TAB)
+  const [tab, setTab] = useState(getTabFromHash)
   const { data: techTrends } = useQuery(dataQueries.techTrends)
   const { data: roleTrends } = useQuery(dataQueries.roleTrends)
   const { data: history } = useQuery(dataQueries.history)
 
-  // Sync tab state from hash on mount and popstate
+  // Sync tab state when the URL hash changes (e.g. back/forward navigation)
   useEffect(() => {
-    setTab(getTabFromHash())
     const onHashChange = () => setTab(getTabFromHash())
     window.addEventListener("hashchange", onHashChange)
     return () => window.removeEventListener("hashchange", onHashChange)
