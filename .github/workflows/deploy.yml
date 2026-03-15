@@ -1,0 +1,53 @@
+name: Deploy Site
+
+on:
+  push:
+    branches: [main]
+  repository_dispatch:
+    types: [data-updated]
+
+env:
+  NODE_VERSION: "22"
+  DATA_BASE_URL: https://data.hn-job-trends.gantryops.dev
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: true
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+        env:
+          DATA_BASE_URL: ${{ env.DATA_BASE_URL }}
+          NEXT_PUBLIC_DATA_BASE_URL: ${{ env.DATA_BASE_URL }}
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: ./out
+
+      - id: deploy
+        uses: actions/deploy-pages@v4

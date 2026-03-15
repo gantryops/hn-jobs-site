@@ -1,0 +1,59 @@
+# HN Jobs Trends
+
+> Tech job market trends extracted from Hacker News "Who is Hiring?" threads, updated monthly.
+
+This site visualises structured data from the hn-jobs-data pipeline. All data is available as JSON.
+
+## Data API
+
+Base URL: https://data.hn-job-trends.gantryops.dev
+
+### Index files (stable URLs, updated monthly)
+
+- /indexes/latest.json — Most recent month's analysis (technologies, roles, compensation, remote, experience levels)
+- /indexes/manifest.json — List of all available runs with dates and job counts
+- /indexes/history.json — Lightweight summary of every run (for trend charts)
+- /indexes/tech-trends.json — Per-technology counts over time
+- /indexes/role-trends.json — Per-role counts over time
+
+### Per-run files (by date)
+
+- /runs/{date}/analysis.json — Full analysis for a specific month
+- /runs/{date}/classified.json — Per-job classification (each job tagged with technologies, role, experience level, remote status, salary)
+- /runs/{date}/raw.json — Raw job post text as fetched from HN
+
+### Available dates
+
+Check /indexes/manifest.json for the full list. Dates are formatted as YYYY-MM-DD. Data is collected on the 3rd (main run) and 28th (refresh run) of each month.
+
+## Schema
+
+### analysis.json
+
+Each analysis contains:
+- technologies: array of { name, count, pct } — sorted by count descending
+- roles: array of { name, count, pct } — normalised to a fixed taxonomy
+- compensation: { salary_mentioned_count, salary_mentioned_pct, ranges: [{ band, count }], equity_mentioned_count, equity_mentioned_pct }
+- remote: { fully_remote, hybrid, onsite_only, not_mentioned } — each has { count, pct }
+- experience_levels: array of { level, count, pct } — Senior, Mid, Junior, Not specified
+- ai_ml_mentioned_pct: percentage of jobs mentioning AI/ML
+
+### classified.json
+
+Per-job granular data. Each job has:
+- id: HN item ID (cross-reference with raw.json for full text)
+- technologies: array of technology names
+- role: single role from the taxonomy
+- experience_level: Senior | Mid | Junior | Not specified
+- remote: fully_remote | hybrid | onsite_only | not_mentioned
+- salary_mentioned: boolean
+- salary_band: string or null
+- equity_mentioned: boolean
+- ai_ml_mentioned: boolean
+
+## Source code
+
+- Data pipeline: https://github.com/gantryops/hn-jobs-data
+- Site: https://github.com/gantryops/hn-jobs-site
+
+Built by GantryOps (https://gantryops.dev)
