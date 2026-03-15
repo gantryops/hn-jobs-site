@@ -13,13 +13,7 @@ export function Footer() {
               >
                 &ldquo;Who is Hiring?&rdquo;
               </a>{" "}
-              thread and direct job posts. Job listings are classified using{" "}
-              <a
-                href="https://openrouter.ai"
-                className="underline underline-offset-2"
-              >
-                Google Gemini Flash
-              </a>{" "}
+              thread and direct job posts. Job listings are classified using a llm
               against a fixed taxonomy of technologies, roles, and work arrangements. Percentages
               are computed from aggregated counts across all listings.
             </p>
