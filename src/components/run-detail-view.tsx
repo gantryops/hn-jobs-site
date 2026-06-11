@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { TechChart } from "@/components/tech-chart"
 import { RemoteChart } from "@/components/remote-chart"
 import { CrossTab } from "@/components/cross-tab"
+import { PostingsList } from "@/components/postings-list"
 import Link from "next/link"
 
 // ==============================================================================
@@ -222,6 +223,17 @@ export function RunDetailView({ date, isHome }: RunDetailViewProps) {
         </CardHeader>
         <CardContent>
           <RemoteChart data={data.remote} />
+        </CardContent>
+      </Card>
+
+      {/* Job postings — the underlying listings, classified and searchable */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Job Postings</CardTitle>
+          <p className="text-muted-foreground text-xs">Browse the individual listings behind these numbers</p>
+        </CardHeader>
+        <CardContent>
+          <PostingsList date={date} />
         </CardContent>
       </Card>
     </div>

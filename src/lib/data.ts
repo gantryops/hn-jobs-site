@@ -6,10 +6,10 @@
 // runtime refetching via the Refresh button.
 // ==============================================================================
 
-import type { Analysis, ClassifiedData, History, Manifest, TrendSeries } from "../../hn-jobs-data/scripts/schemas"
+import type { Analysis, ClassifiedData, History, Manifest, RawData, TrendSeries } from "../../hn-jobs-data/scripts/schemas"
 
-export type { Analysis, ClassifiedData, History, Manifest, TrendSeries }
-export type { ClassifiedJob } from "../../hn-jobs-data/scripts/schemas"
+export type { Analysis, ClassifiedData, History, Manifest, RawData, TrendSeries }
+export type { ClassifiedJob, RawJob } from "../../hn-jobs-data/scripts/schemas"
 
 const DATA_BASE =
   process.env.DATA_BASE_URL || process.env.NEXT_PUBLIC_DATA_BASE_URL || ""
@@ -31,6 +31,13 @@ export function classifiedQuery(date: string) {
   return {
     queryKey: ["classified", date] as const,
     queryFn: () => fetchJSON<ClassifiedData>(`/runs/${date}/classified.json`),
+  }
+}
+
+export function rawQuery(date: string) {
+  return {
+    queryKey: ["raw", date] as const,
+    queryFn: () => fetchJSON<RawData>(`/runs/${date}/raw.json`),
   }
 }
 
