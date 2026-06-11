@@ -71,9 +71,15 @@ export function PostingsList({ date }: { date: string }) {
   const [remote, setRemote] = useState("")
 
   const postings = useMemo(() => {
-    if (!raw) return []
-    const byId = new Map((classified?.jobs ?? []).map((j) => [j.id, j]))
-    return raw.jobs.map((j) => toPosting(j, byId.get(j.id)))
+    if (!raw || !classified) return []
+    const byId = new Map(classified.jobs.map((j) => [j.id, j]))
+    // Only show postings the classifier confirmed as jobs — raw also contains
+    // non-postings (meta-comments, "who wants to be hired"), which are gated out
+    // of classified.json by the is_job filter and so have no entry here.
+    return raw.jobs.flatMap((j) => {
+      const tags = byId.get(j.id)
+      return tags ? [toPosting(j, tags)] : []
+    })
   }, [raw, classified])
 
   const roles = useMemo(
@@ -96,7 +102,7 @@ export function PostingsList({ date }: { date: string }) {
     })
   }, [postings, search, role, tech, remote])
 
-  if (!raw) return <p className="text-muted-foreground text-sm">Loading postings…</p>
+  if (!raw || !classified) return <p className="text-muted-foreground text-sm">Loading postings…</p>
 
   return (
     <div className="space-y-4">
