@@ -18,8 +18,55 @@ import {
 
 import { CHART_COLORS } from "@/lib/colors"
 
+type TrendPoint = TrendSeries["series"][string][number]
+
 const VALID_TABS = new Set(["tech", "roles", "overview"])
 const DEFAULT_TAB = "tech"
+
+function getMonthKey(date: string): string {
+  return date.slice(0, 7)
+}
+
+function latestByMonth<T extends { date: string }>(points: T[]): T[] {
+  const latest = new Map<string, T>()
+
+  for (const point of points) {
+    const month = getMonthKey(point.date)
+    const existing = latest.get(month)
+    if (!existing || existing.date <= point.date) {
+      latest.set(month, point)
+    }
+  }
+
+  return [...latest.values()].sort((a, b) => a.date.localeCompare(b.date))
+}
+
+function normalizeTrendSeries(series: TrendSeries["series"]): TrendSeries["series"] {
+  const latestDatesByMonth = new Map<string, string>()
+
+  for (const points of Object.values(series)) {
+    for (const point of points) {
+      const month = getMonthKey(point.date)
+      const existingDate = latestDatesByMonth.get(month)
+      if (!existingDate || existingDate <= point.date) {
+        latestDatesByMonth.set(month, point.date)
+      }
+    }
+  }
+
+  const latestDates = new Set(latestDatesByMonth.values())
+  const normalized: TrendSeries["series"] = {}
+
+  for (const [name, points] of Object.entries(series)) {
+    const pointsByDate = new Map(points.map((point) => [point.date, point]))
+    normalized[name] = [...latestDates]
+      .map((date) => pointsByDate.get(date))
+      .filter((point): point is TrendPoint => Boolean(point))
+      .sort((a, b) => a.date.localeCompare(b.date))
+  }
+
+  return normalized
+}
 
 function getTabFromHash(): string {
   if (typeof window === "undefined") return DEFAULT_TAB
@@ -32,6 +79,7 @@ export function TrendsView() {
   const { data: techTrends } = useQuery(dataQueries.techTrends)
   const { data: roleTrends } = useQuery(dataQueries.roleTrends)
   const { data: history } = useQuery(dataQueries.history)
+  const monthlyRuns = history ? latestByMonth(history.runs) : []
 
   // Sync tab state when the URL hash changes (e.g. back/forward navigation)
   useEffect(() => {
@@ -70,7 +118,7 @@ export function TrendsView() {
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={400}>
-                  <LineChart data={history.runs}>
+                  <LineChart data={monthlyRuns}>
                     <XAxis dataKey="date" tick={{ fontSize: 12 }} />
                     <YAxis yAxisId="count" orientation="left" />
                     <YAxis yAxisId="pct" orientation="right" domain={[0, 100]} unit="%" />
@@ -83,7 +131,14 @@ export function TrendsView() {
                       stroke={CHART_COLORS[0]}
                       strokeWidth={2}
                       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                      label={(props: any) => <EndLabel {...props} text="Jobs" color={CHART_COLORS[0]} total={history.runs.length} />}
+                      label={(props: any) => (
+                        <EndLabel
+                          {...props}
+                          text="Jobs"
+                          color={CHART_COLORS[0]}
+                          total={monthlyRuns.length}
+                        />
+                      )}
                     />
                     <Line
                       yAxisId="pct"
@@ -93,7 +148,14 @@ export function TrendsView() {
                       stroke={CHART_COLORS[1]}
                       strokeWidth={2}
                       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                      label={(props: any) => <EndLabel {...props} text="Remote %" color={CHART_COLORS[1]} total={history.runs.length} />}
+                      label={(props: any) => (
+                        <EndLabel
+                          {...props}
+                          text="Remote %"
+                          color={CHART_COLORS[1]}
+                          total={monthlyRuns.length}
+                        />
+                      )}
                     />
                     <Line
                       yAxisId="pct"
@@ -103,7 +165,14 @@ export function TrendsView() {
                       stroke={CHART_COLORS[2]}
                       strokeWidth={2}
                       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                      label={(props: any) => <EndLabel {...props} text="AI/ML %" color={CHART_COLORS[2]} total={history.runs.length} />}
+                      label={(props: any) => (
+                        <EndLabel
+                          {...props}
+                          text="AI/ML %"
+                          color={CHART_COLORS[2]}
+                          total={monthlyRuns.length}
+                        />
+                      )}
                     />
                   </LineChart>
                 </ResponsiveContainer>
@@ -120,7 +189,21 @@ export function TrendsView() {
 // End label — renders text at the last data point of a line
 // ==============================================================================
 
-function EndLabel({ x, y, index, text, color, total }: { x: number; y: number; index: number; text: string; color: string; total: number }) {
+function EndLabel({
+  x,
+  y,
+  index,
+  text,
+  color,
+  total,
+}: {
+  x: number
+  y: number
+  index: number
+  text: string
+  color: string
+  total: number
+}) {
   if (index !== total - 1) return <g />
   return (
     <text x={x + 8} y={y} dy={4} fill={color} fontSize={11} fontWeight={500}>
@@ -133,20 +216,16 @@ function EndLabel({ x, y, index, text, color, total }: { x: number; y: number; i
 // Stacked area trend chart — shows composition over time
 // ==============================================================================
 
-function TrendChart({
-  title,
-  series,
-  topN,
-}: {
-  title: string
-  series: TrendSeries
-  topN: number
-}) {
-  const entries = Object.entries(series.series)
+function TrendChart({ title, series, topN }: { title: string; series: TrendSeries; topN: number }) {
+  const entries = Object.entries(normalizeTrendSeries(series.series))
+  const latestDate = entries
+    .flatMap(([, points]) => points.map((point) => point.date))
+    .sort()
+    .at(-1)
   const ranked = entries
     .map(([name, points]) => ({
       name,
-      latestCount: points.at(-1)?.count ?? 0,
+      latestCount: latestDate ? (points.find((point) => point.date === latestDate)?.count ?? 0) : 0,
     }))
     .sort((a, b) => b.latestCount - a.latestCount)
     .slice(0, topN)
@@ -189,14 +268,18 @@ function TrendChart({
                 // Use the same fixed ranking (by latest count) as the area stacking
                 const rankOrder = ranked.map((r) => r.name)
                 const sorted = [...payload].sort(
-                  (a, b) => rankOrder.indexOf(a.name as string) - rankOrder.indexOf(b.name as string),
+                  (a, b) =>
+                    rankOrder.indexOf(a.name as string) - rankOrder.indexOf(b.name as string),
                 )
                 return (
                   <div className="rounded-md border border-border bg-card p-3 shadow-md">
                     <p className="mb-2 text-xs font-medium">{label}</p>
                     {sorted.map((entry) => (
                       <div key={entry.name} className="flex items-center gap-2 text-xs">
-                        <div className="h-2 w-2 rounded-sm" style={{ backgroundColor: entry.color as string }} />
+                        <div
+                          className="h-2 w-2 rounded-sm"
+                          style={{ backgroundColor: entry.color as string }}
+                        />
                         <span className="text-muted-foreground">{entry.name}</span>
                         <span className="ml-auto font-medium">{entry.value}</span>
                       </div>
