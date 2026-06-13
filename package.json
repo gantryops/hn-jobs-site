@@ -4,8 +4,8 @@
   "private": true,
   "packageManager": "pnpm@10.30.3",
   "scripts": {
-    "dev": "next dev",
-    "dev:data": "pnpm dlx serve@latest ../hn-jobs-data --cors --listen 3001",
+    "dev": "bash scripts/dev.sh",
+    "dev:data": "python3 scripts/serve-data.py",
     "build": "next build",
     "lint": "eslint",
     "lint:fix": "eslint --fix",

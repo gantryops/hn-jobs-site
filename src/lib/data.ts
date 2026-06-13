@@ -58,4 +58,24 @@ export const dataQueries = {
     queryKey: ["role-trends"] as const,
     queryFn: () => fetchJSON<TrendSeries>("/indexes/role-trends.json"),
   },
+  insights: {
+    queryKey: ["insights"] as const,
+    queryFn: () => fetchJSON<unknown>("/indexes/insights.json"),
+  },
+  techClusters: {
+    queryKey: ["tech-clusters"] as const,
+    queryFn: () => fetchJSON<unknown>("/indexes/tech-clusters.json"),
+  },
+  techAssociations: {
+    queryKey: ["tech-associations"] as const,
+    queryFn: () => fetchJSON<unknown>("/indexes/tech-associations.json"),
+  },
+  techMomentum: {
+    queryKey: ["tech-momentum"] as const,
+    queryFn: () => fetchJSON<unknown>("/indexes/tech-momentum.json"),
+  },
+  techCooccurrence: {
+    queryKey: ["tech-cooccurrence"] as const,
+    queryFn: () => fetchJSON<unknown>("/indexes/tech-cooccurrence.json"),
+  },
 } as const
