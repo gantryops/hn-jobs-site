@@ -7,7 +7,7 @@ import type { TrendSeries } from "@/lib/fs-data"
 import {
   Area, AreaChart, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from "recharts"
-import { ArrowUp, ArrowDown, TrendingUp, TrendingDown, Link2, Layers, Minus, Sparkles } from "lucide-react"
+import { ArrowUp, ArrowDown, TrendingUp, TrendingDown, Minus, Layers, Sparkles } from "lucide-react"
 import { CHART_COLORS } from "@/lib/colors"
 
 // ==============================================================================
@@ -15,7 +15,6 @@ import { CHART_COLORS } from "@/lib/colors"
 // ==============================================================================
 
 type Cluster = { label: string; top_techs: string[]; top_roles?: string[]; size?: number; pct: number; avg_salary_mentioned?: number; avg_remote_pct?: number; avg_ai_ml_pct?: number }
-type AssocRule = { antecedent: string[]; consequent: string[]; confidence: number; lift: number; support?: number; count?: number }
 type MomentumEntry = { tech: string; slope_pct: number; total_count?: number }
 type SimPair = { tech: string; with: string; count: number; jaccard: number }
 type TrendPoint = TrendSeries["series"][string][number]
@@ -25,7 +24,6 @@ interface InsightsClientProps {
   languageTrends: TrendSeries
   roleTrends: TrendSeries
   clusters: Cluster[]
-  associations: AssocRule[]
   momentum: { rising: MomentumEntry[]; declining: MomentumEntry[]; stable: MomentumEntry[] }
   topPairs: SimPair[]
 }
@@ -113,7 +111,7 @@ function TrendChart({ title, series, topN }: { title: string; series: TrendSerie
 
 export function InsightsView({
   techTrends, languageTrends, roleTrends,
-  clusters, associations, momentum, topPairs,
+  clusters, momentum, topPairs,
 }: InsightsClientProps) {
   return (
     <div className="space-y-10">
@@ -218,39 +216,9 @@ export function InsightsView({
         )}
       </section>
 
-      {/* Associations */}
       <section>
         <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold">
-          <Link2 className="size-4 text-primary" />Associations
-        </h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {associations.slice(0, 9).map((rule, i) => (
-            <Card key={rule.antecedent.join(",") + i} size="sm">
-              <CardContent className="pt-4">
-                <div className="flex items-start gap-3">
-                  <Link2 className="text-muted-foreground mt-0.5 size-4 shrink-0" />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      {rule.antecedent.map((t) => <Badge key={t} variant="default" className="text-xs">{t}</Badge>)}
-                      <span className="text-muted-foreground text-xs">→</span>
-                      {rule.consequent.map((t) => <Badge key={t} variant="secondary" className="text-xs">{t}</Badge>)}
-                    </div>
-                    <div className="mt-2 flex gap-3 text-xs">
-                      <span className="text-foreground font-medium">{Math.round(rule.confidence * 100)}% conf</span>
-                      <span className="text-muted-foreground">{rule.lift}x lift</span>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </section>
-
-      {/* Co-occurrence */}
-      <section>
-        <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold">
-          <Link2 className="size-4 text-primary" />Top Technology Pairs
+          <Layers className="size-4 text-primary" />Top Technology Pairs
         </h2>
         <Card>
           <CardContent className="pt-4">
@@ -276,7 +244,6 @@ export function InsightsView({
         <CardContent className="py-3">
           <div className="text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
             <span><strong>Greedy complete-linkage</strong> Jaccard clustering for tech archetypes</span>
-            <span><strong>Apriori</strong> association rule mining (min support 3%)</span>
             <span><strong>Linear regression</strong> slope for momentum scoring</span>
           </div>
         </CardContent>

@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { loadTechTrends, loadLanguageTrends, loadRoleTrends, loadTechClusters, loadTechAssociations, loadTechMomentum, loadTechCooccurrence } from "@/lib/fs-data"
+import { loadTechTrends, loadLanguageTrends, loadRoleTrends, loadTechClusters, loadTechMomentum, loadTechCooccurrence } from "@/lib/fs-data"
 import { InsightsView } from "@/components/insights-view"
 
 export const metadata: Metadata = {
@@ -10,14 +10,13 @@ export const metadata: Metadata = {
 export default async function InsightsPage() {
   const [
     techTrends, languageTrends, roleTrends,
-    rawClusters, rawAssociations, rawMomentum, rawCooccurrence,
+    rawClusters, rawMomentum, rawCooccurrence,
   ] = await Promise.all([
     loadTechTrends(), loadLanguageTrends(), loadRoleTrends(),
-    loadTechClusters(), loadTechAssociations(), loadTechMomentum(), loadTechCooccurrence(),
+    loadTechClusters(), loadTechMomentum(), loadTechCooccurrence(),
   ])
 
   const clusters = (rawClusters as { clusters?: unknown[] })?.clusters ?? []
-  const associations = (rawAssociations as { rules?: unknown[] })?.rules ?? []
   const momentum = rawMomentum as { rising?: unknown[]; declining?: unknown[]; stable?: unknown[] }
   const topPairs = (rawCooccurrence as { top_pairs?: unknown[] })?.top_pairs ?? []
 
@@ -28,7 +27,6 @@ export default async function InsightsPage() {
         languageTrends={languageTrends}
         roleTrends={roleTrends}
         clusters={clusters as never}
-        associations={associations as never}
         momentum={momentum as never}
         topPairs={topPairs as never}
       />
