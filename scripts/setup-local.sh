@@ -41,18 +41,18 @@ fi
 
 if [ ! -f "$SITE_DIR/.env.development" ]; then
   cat > "$SITE_DIR/.env.development" <<'EOF'
-DATA_BASE_URL=http://localhost:3001
-NEXT_PUBLIC_DATA_BASE_URL=http://localhost:3001
+DATA_BASE_URL=http://localhost:3000/api
+NEXT_PUBLIC_DATA_BASE_URL=http://localhost:3000/api
 EOF
-  echo "Created .env.development (localhost:3001)"
+  echo "Created .env.development"
 else
   echo ".env.development already exists, skipping"
 fi
 
 if [ ! -f "$SITE_DIR/.env.production" ]; then
   cat > "$SITE_DIR/.env.production" <<'EOF'
-DATA_BASE_URL=https://gantryops.github.io/hn-jobs-data
-NEXT_PUBLIC_DATA_BASE_URL=https://gantryops.github.io/hn-jobs-data
+DATA_BASE_URL=https://data.hn-job-trends.gantryops.dev
+NEXT_PUBLIC_DATA_BASE_URL=https://data.hn-job-trends.gantryops.dev
 EOF
   echo "Created .env.production"
 else
@@ -67,5 +67,4 @@ cd "$SITE_DIR" && pnpm install
 
 echo ""
 echo "Done! To start developing:"
-echo "  Terminal 1: pnpm dev:data   (serves data repo on :3001)"
-echo "  Terminal 2: pnpm dev        (Next.js on :3000)"
+echo "  pnpm dev"
