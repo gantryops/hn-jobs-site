@@ -40,20 +40,14 @@ fi
 # ── Create .env files ────────────────────────────────────────────────────────
 
 if [ ! -f "$SITE_DIR/.env.development" ]; then
-  cat > "$SITE_DIR/.env.development" <<'EOF'
-DATA_BASE_URL=http://localhost:3000/api
-NEXT_PUBLIC_DATA_BASE_URL=http://localhost:3000/api
-EOF
+  echo "# Dev — reads from hn-jobs-data submodule on disk" > "$SITE_DIR/.env.development"
   echo "Created .env.development"
 else
   echo ".env.development already exists, skipping"
 fi
 
 if [ ! -f "$SITE_DIR/.env.production" ]; then
-  cat > "$SITE_DIR/.env.production" <<'EOF'
-DATA_BASE_URL=https://data.hn-job-trends.gantryops.dev
-NEXT_PUBLIC_DATA_BASE_URL=https://data.hn-job-trends.gantryops.dev
-EOF
+  echo "NEXT_PUBLIC_UMAMI_URL=https://cloud.umami.is/script.js" > "$SITE_DIR/.env.production"
   echo "Created .env.production"
 else
   echo ".env.production already exists, skipping"

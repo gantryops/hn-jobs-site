@@ -1,11 +1,11 @@
-import { dataQueries } from "@/lib/data"
+import { loadManifest } from "@/lib/fs-data"
 
 export const dynamic = "force-static"
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://hn-job-trends.gantryops.dev"
 
 export async function GET() {
-  const manifest = await dataQueries.manifest.queryFn()
+  const manifest = await loadManifest()
 
   const items = manifest.runs
     .slice(0, 20)

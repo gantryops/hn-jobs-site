@@ -1,32 +1,23 @@
-import { dehydrate, HydrationBoundary, QueryClient } from "@tanstack/react-query"
-import { analysisQuery, classifiedQuery, dataQueries } from "@/lib/data"
+import { loadManifest, loadAnalysis, loadClassified, loadRaw } from "@/lib/fs-data"
 import { RunDetailView } from "@/components/run-detail-view"
 
-// Static export needs to know all possible [date] values at build time
 export async function generateStaticParams() {
-  try {
-    const manifest = await dataQueries.manifest.queryFn()
-    return manifest.runs.map((run) => ({ date: run.date }))
-  } catch {
-    return []
-  }
+  const manifest = await loadManifest()
+  return manifest.runs.map((run) => ({ date: run.date }))
 }
 
 export default async function RunPage({ params }: { params: Promise<{ date: string }> }) {
   const { date } = await params
-  const queryClient = new QueryClient()
 
-  await Promise.all([
-    queryClient.prefetchQuery(analysisQuery(date)),
-    queryClient.prefetchQuery(classifiedQuery(date)),
-    queryClient.prefetchQuery(dataQueries.manifest),
+  const [analysis, classified, raw] = await Promise.all([
+    loadAnalysis(date),
+    loadClassified(date),
+    loadRaw(date),
   ])
 
   return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
-      <main className="mx-auto max-w-6xl px-4 py-8">
-        <RunDetailView date={date} />
-      </main>
-    </HydrationBoundary>
+    <main className="mx-auto max-w-6xl px-4 py-8">
+      <RunDetailView analysis={analysis} classified={classified} raw={raw} date={date} />
+    </main>
   )
 }

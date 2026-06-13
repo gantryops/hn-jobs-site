@@ -1,8 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useQuery } from "@tanstack/react-query"
-import { analysisQuery, classifiedQuery, dataQueries } from "@/lib/data"
+import type { Analysis, ClassifiedData, RawData } from "@/lib/fs-data"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { TechChart } from "@/components/tech-chart"
@@ -16,46 +15,28 @@ import Link from "next/link"
 // ==============================================================================
 
 interface RunDetailViewProps {
-  date: string
+  analysis: Analysis
+  classified: ClassifiedData
+  raw: RawData
+  prevAnalysis?: Analysis
+  date?: string
   isHome?: boolean
 }
 
-export function RunDetailView({ date, isHome }: RunDetailViewProps) {
-  const { data } = useQuery(analysisQuery(date))
-  const { data: manifest } = useQuery(dataQueries.manifest)
-  const { data: classified } = useQuery(classifiedQuery(date))
+export function RunDetailView({ analysis, classified, raw, prevAnalysis, date, isHome }: RunDetailViewProps) {
+  const data = analysis
+  const prev = prevAnalysis
 
-  // Track which tech/role the user clicked for cross-tab breakdown
   const [selectedTech, setSelectedTech] = useState<string | null>(null)
   const [selectedRole, setSelectedRole] = useState<string | null>(null)
   const [selectedLevel, setSelectedLevel] = useState<string | null>(null)
 
-  // Find the previous run for MoM deltas
-  const runIndex = manifest?.runs.findIndex((r) => r.date === date) ?? -1
-  const prevDate = manifest && runIndex >= 0 && runIndex < manifest.runs.length - 1
-    ? manifest.runs[runIndex + 1].date
-    : null
-  const { data: prev } = useQuery({
-    ...analysisQuery(prevDate ?? ""),
-    enabled: !!prevDate,
-  })
-
-  if (!data) return <p>No data available for {date}.</p>
-
-  // Filter classified jobs for cross-tab
-  const techJobs = selectedTech && classified
-    ? classified.jobs.filter((j) => j.technologies.includes(selectedTech))
-    : []
-  const roleJobs = selectedRole && classified
-    ? classified.jobs.filter((j) => j.role === selectedRole)
-    : []
-  const levelJobs = selectedLevel && classified
-    ? classified.jobs.filter((j) => j.experience_level === selectedLevel)
-    : []
+  const techJobs = selectedTech ? classified.jobs.filter((j) => j.technologies.includes(selectedTech)) : []
+  const roleJobs = selectedRole ? classified.jobs.filter((j) => j.role === selectedRole) : []
+  const levelJobs = selectedLevel ? classified.jobs.filter((j) => j.experience_level === selectedLevel) : []
 
   return (
     <div className="space-y-8">
-      {/* Header */}
       <div>
         {!isHome && (
           <Link href="/history" className="text-muted-foreground mb-2 inline-block text-sm hover:underline">
@@ -63,7 +44,7 @@ export function RunDetailView({ date, isHome }: RunDetailViewProps) {
           </Link>
         )}
         <h1 className="text-3xl font-bold">
-          {isHome ? "HN Jobs Trends" : date}
+          {isHome ? "HN Jobs Trends" : date ?? data.date}
         </h1>
         {isHome && (
           <p className="text-muted-foreground mt-1">
@@ -76,7 +57,6 @@ export function RunDetailView({ date, isHome }: RunDetailViewProps) {
         </div>
       </div>
 
-      {/* Summary cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard title="Jobs" value={String(data.job_count)} delta={deltaVal(data.job_count, prev?.job_count)} />
         <StatCard title="Remote %" value={`${data.remote.fully_remote.pct}%`} delta={deltaPp(data.remote.fully_remote.pct, prev?.remote.fully_remote.pct)} />
@@ -84,7 +64,6 @@ export function RunDetailView({ date, isHome }: RunDetailViewProps) {
         <StatCard title="AI/ML Mentioned" value={`${data.ai_ml_mentioned_pct}%`} delta={deltaPp(data.ai_ml_mentioned_pct, prev?.ai_ml_mentioned_pct)} />
       </div>
 
-      {/* Tech chart + Roles — side by side */}
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
@@ -97,12 +76,8 @@ export function RunDetailView({ date, isHome }: RunDetailViewProps) {
               onBarClick={(name) => setSelectedTech(selectedTech === name ? null : name)}
               selectedBar={selectedTech}
             />
-            {selectedTech && classified && (
-              <CrossTab
-                title={`${selectedTech} jobs by role`}
-                jobs={techJobs}
-                dimension="role"
-              />
+            {selectedTech && (
+              <CrossTab title={`${selectedTech} jobs by role`} jobs={techJobs} dimension="role" />
             )}
           </CardContent>
         </Card>
@@ -132,18 +107,13 @@ export function RunDetailView({ date, isHome }: RunDetailViewProps) {
                 )
               })}
             </div>
-            {selectedRole && classified && (
-              <CrossTab
-                title={`${selectedRole} jobs by technology`}
-                jobs={roleJobs}
-                dimension="technologies"
-              />
+            {selectedRole && (
+              <CrossTab title={`${selectedRole} jobs by technology`} jobs={roleJobs} dimension="technologies" />
             )}
           </CardContent>
         </Card>
       </div>
 
-      {/* Experience levels + Compensation — side by side */}
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
@@ -167,18 +137,10 @@ export function RunDetailView({ date, isHome }: RunDetailViewProps) {
                 )
               })}
             </div>
-            {selectedLevel && classified && (
+            {selectedLevel && (
               <div className="grid gap-4 sm:grid-cols-2">
-                <CrossTab
-                  title={`${selectedLevel} by technology`}
-                  jobs={levelJobs}
-                  dimension="technologies"
-                />
-                <CrossTab
-                  title={`${selectedLevel} by role`}
-                  jobs={levelJobs}
-                  dimension="role"
-                />
+                <CrossTab title={`${selectedLevel} by technology`} jobs={levelJobs} dimension="technologies" />
+                <CrossTab title={`${selectedLevel} by role`} jobs={levelJobs} dimension="role" />
               </div>
             )}
           </CardContent>
@@ -216,7 +178,6 @@ export function RunDetailView({ date, isHome }: RunDetailViewProps) {
         </Card>
       </div>
 
-      {/* Remote work — full width */}
       <Card>
         <CardHeader>
           <CardTitle>Remote Work</CardTitle>
@@ -226,14 +187,13 @@ export function RunDetailView({ date, isHome }: RunDetailViewProps) {
         </CardContent>
       </Card>
 
-      {/* Job postings — the underlying listings, classified and searchable */}
       <Card>
         <CardHeader>
           <CardTitle>Job Postings</CardTitle>
           <p className="text-muted-foreground text-xs">Browse the individual listings behind these numbers</p>
         </CardHeader>
         <CardContent>
-          <PostingsList date={date} />
+          <PostingsList raw={raw} classified={classified} />
         </CardContent>
       </Card>
     </div>

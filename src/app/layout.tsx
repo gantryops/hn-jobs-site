@@ -1,7 +1,6 @@
 import type { Metadata } from "next"
 import Script from "next/script"
 import { IBM_Plex_Sans, JetBrains_Mono } from "next/font/google"
-import { Providers } from "./providers"
 import { Nav } from "@/components/nav"
 import { Footer } from "@/components/footer"
 import "./globals.css"
@@ -39,11 +38,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${ibmPlexSans.variable} ${jetbrainsMono.variable} antialiased`}>
-        <Providers>
-          <Nav />
-          {children}
-          <Footer />
-        </Providers>
+        <Nav />
+        {children}
+        <Footer />
         {process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID && (
           <Script
             defer

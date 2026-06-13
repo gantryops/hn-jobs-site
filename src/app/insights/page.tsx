@@ -1,34 +1,37 @@
 import type { Metadata } from "next"
-import { dehydrate, HydrationBoundary, QueryClient } from "@tanstack/react-query"
-import { dataQueries } from "@/lib/data"
+import { loadTechTrends, loadLanguageTrends, loadRoleTrends, loadTechClusters, loadTechAssociations, loadTechMomentum, loadTechCooccurrence } from "@/lib/fs-data"
 import { InsightsView } from "@/components/insights-view"
 
 export const metadata: Metadata = {
   title: "Insights",
-  description:
-    "Trends and ML-driven market signals from HN job data — tech clusters, momentum, associations, and co-occurrence patterns.",
+  description: "Trends and ML-driven market signals from HN job data.",
 }
 
 export default async function InsightsPage() {
-  const queryClient = new QueryClient()
-
-  // Prefetch everything: trend charts + ML signals
-  await Promise.all([
-    queryClient.prefetchQuery(dataQueries.techTrends),
-    queryClient.prefetchQuery(dataQueries.languageTrends),
-    queryClient.prefetchQuery(dataQueries.roleTrends),
-    queryClient.prefetchQuery(dataQueries.history),
-    queryClient.prefetchQuery(dataQueries.techClusters),
-    queryClient.prefetchQuery(dataQueries.techAssociations),
-    queryClient.prefetchQuery(dataQueries.techMomentum),
-    queryClient.prefetchQuery(dataQueries.techCooccurrence),
+  const [
+    techTrends, languageTrends, roleTrends,
+    rawClusters, rawAssociations, rawMomentum, rawCooccurrence,
+  ] = await Promise.all([
+    loadTechTrends(), loadLanguageTrends(), loadRoleTrends(),
+    loadTechClusters(), loadTechAssociations(), loadTechMomentum(), loadTechCooccurrence(),
   ])
 
+  const clusters = (rawClusters as { clusters?: unknown[] })?.clusters ?? []
+  const associations = (rawAssociations as { rules?: unknown[] })?.rules ?? []
+  const momentum = rawMomentum as { rising?: unknown[]; declining?: unknown[]; stable?: unknown[] }
+  const topPairs = (rawCooccurrence as { top_pairs?: unknown[] })?.top_pairs ?? []
+
   return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
-      <main className="mx-auto max-w-6xl px-4 py-8">
-        <InsightsView />
-      </main>
-    </HydrationBoundary>
+    <main className="mx-auto max-w-6xl px-4 py-8">
+      <InsightsView
+        techTrends={techTrends}
+        languageTrends={languageTrends}
+        roleTrends={roleTrends}
+        clusters={clusters as never}
+        associations={associations as never}
+        momentum={momentum as never}
+        topPairs={topPairs as never}
+      />
+    </main>
   )
 }

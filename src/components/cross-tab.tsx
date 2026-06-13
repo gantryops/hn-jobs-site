@@ -1,6 +1,6 @@
 "use client"
 
-import type { ClassifiedJob } from "@/lib/data"
+import type { ClassifiedJob } from "@/lib/fs-data"
 
 // ==============================================================================
 // Cross-tabulation breakdown
