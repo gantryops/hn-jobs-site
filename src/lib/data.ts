@@ -54,6 +54,10 @@ export const dataQueries = {
     queryKey: ["tech-trends"] as const,
     queryFn: () => fetchJSON<TrendSeries>("/indexes/tech-trends.json"),
   },
+  languageTrends: {
+    queryKey: ["language-trends"] as const,
+    queryFn: () => fetchJSON<TrendSeries>("/indexes/language-trends.json"),
+  },
   roleTrends: {
     queryKey: ["role-trends"] as const,
     queryFn: () => fetchJSON<TrendSeries>("/indexes/role-trends.json"),

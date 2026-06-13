@@ -20,7 +20,7 @@ import { CHART_COLORS } from "@/lib/colors"
 
 type TrendPoint = TrendSeries["series"][string][number]
 
-const VALID_TABS = new Set(["tech", "roles", "overview"])
+const VALID_TABS = new Set(["languages", "tech", "roles", "overview"])
 const DEFAULT_TAB = "tech"
 
 function getMonthKey(date: string): string {
@@ -77,6 +77,7 @@ function getTabFromHash(): string {
 export function TrendsView() {
   const [tab, setTab] = useState(getTabFromHash)
   const { data: techTrends } = useQuery(dataQueries.techTrends)
+  const { data: languageTrends } = useQuery(dataQueries.languageTrends)
   const { data: roleTrends } = useQuery(dataQueries.roleTrends)
   const { data: history } = useQuery(dataQueries.history)
   const monthlyRuns = history ? latestByMonth(history.runs) : []
@@ -98,12 +99,17 @@ export function TrendsView() {
       <Tabs value={tab} onValueChange={onTabChange}>
         <TabsList>
           <TabsTrigger value="tech">Technologies</TabsTrigger>
+          <TabsTrigger value="languages">Languages</TabsTrigger>
           <TabsTrigger value="roles">Roles</TabsTrigger>
           <TabsTrigger value="overview">Overview</TabsTrigger>
         </TabsList>
 
         <TabsContent value="tech" className="mt-6">
           {techTrends && <TrendChart title="Technology Trends" series={techTrends} topN={10} />}
+        </TabsContent>
+
+        <TabsContent value="languages" className="mt-6">
+          {languageTrends && <TrendChart title="Language Trends" series={languageTrends} topN={10} />}
         </TabsContent>
 
         <TabsContent value="roles" className="mt-6">

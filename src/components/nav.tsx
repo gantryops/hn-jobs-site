@@ -6,9 +6,8 @@ import { cn } from "@/lib/utils"
 
 const links = [
   { href: "/", label: "Latest" },
-  { href: "/trends", label: "Trends" },
+  { href: "/insights", label: "Insights" },
   { href: "/history", label: "History" },
-  { href: "/signals", label: "Signals" },
 ] as const
 
 export function Nav() {
