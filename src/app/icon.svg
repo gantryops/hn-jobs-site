@@ -1,4 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="6" fill="#1A1A1A"/>
-  <text x="16" y="22" text-anchor="middle" font-family="system-ui, sans-serif" font-weight="700" font-size="16" fill="#C8A960">HN</text>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FF6600"/>
+      <stop offset="100%" stop-color="#E55D00"/>
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="6" fill="url(#bg)"/>
+  <!-- HN text -->
+  <text x="16" y="17" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-weight="800" font-size="13" fill="white" letter-spacing="-0.5">HN</text>
+  <!-- Upward trend arrow -->
+  <line x1="10" y1="28" x2="16" y2="20" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.85"/>
+  <line x1="16" y1="20" x2="22" y2="28" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.85"/>
+  <line x1="16" y1="20" x2="16" y2="27" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.85"/>
 </svg>
