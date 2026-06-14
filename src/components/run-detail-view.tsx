@@ -31,7 +31,7 @@ export function RunDetailView({ analysis, classified, raw, prevAnalysis, date, i
   const [selectedRole, setSelectedRole] = useState<string | null>(null)
   const [selectedLevel, setSelectedLevel] = useState<string | null>(null)
 
-  const techJobs = selectedTech ? classified.jobs.filter((j) => j.technologies.includes(selectedTech)) : []
+  const techJobs = selectedTech ? classified.jobs.filter((j) => (j.technologies as readonly string[]).includes(selectedTech)) : []
   const roleJobs = selectedRole ? classified.jobs.filter((j) => j.role === selectedRole) : []
   const levelJobs = selectedLevel ? classified.jobs.filter((j) => j.experience_level === selectedLevel) : []
 

@@ -64,7 +64,7 @@ export function PostingsList({ raw, classified }: { raw: RawData; classified: Cl
     return postings.filter((p) => {
       if (q && !p.body.toLowerCase().includes(q) && !p.raw.by.toLowerCase().includes(q)) return false
       if (role && p.tags.role !== role) return false
-      if (tech && !p.tags.technologies.includes(tech)) return false
+      if (tech && !(p.tags.technologies as readonly string[]).includes(tech)) return false
       if (remote && p.tags.remote !== remote) return false
       return true
     })

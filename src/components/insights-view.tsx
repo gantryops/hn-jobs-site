@@ -1,12 +1,9 @@
 "use client"
 
-import { useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import type { TrendSeries } from "@/lib/fs-data"
-import {
-  Area, AreaChart, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis,
-} from "recharts"
+import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
 import { ArrowUp, ArrowDown, TrendingUp, TrendingDown, Minus, Layers, Sparkles } from "lucide-react"
 import { CHART_COLORS } from "@/lib/colors"
 
