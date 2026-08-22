@@ -11,7 +11,7 @@ import { CHART_COLORS } from "@/lib/colors"
 // Types
 // ==============================================================================
 
-type Cluster = { label: string; top_techs: string[]; top_roles?: string[]; size?: number; pct: number; avg_salary_mentioned?: number; avg_remote_pct?: number; avg_ai_ml_pct?: number }
+type Cluster = { label: string; top_techs: string[]; top_roles?: string[]; size?: number; pct: number; avg_salary_mentioned?: number; salary_sample_size?: number; salary_ranges?: Array<{ band: string; count: number; pct: number }>; avg_remote_pct?: number; avg_ai_ml_pct?: number }
 type MomentumEntry = { tech: string; slope_pct: number; total_count?: number }
 type SimPair = { tech: string; with: string; count: number; jaccard: number }
 type TrendPoint = TrendSeries["series"][string][number]
@@ -160,6 +160,27 @@ export function InsightsView({
                   {cluster.avg_salary_mentioned != null && <span className="rounded-md bg-muted/50 px-2 py-0.5">💰 {cluster.avg_salary_mentioned}% salary</span>}
                   {cluster.avg_ai_ml_pct != null && <span className="rounded-md bg-muted/50 px-2 py-0.5">🤖 {cluster.avg_ai_ml_pct}% AI/ML</span>}
                 </div>
+                {cluster.salary_ranges && cluster.salary_sample_size != null && cluster.salary_sample_size > 0 && (
+                  <div className="mt-3">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-medium">Salary ranges</span>
+                      <span className="text-muted-foreground">n={cluster.salary_sample_size}</span>
+                    </div>
+                    <div className="mt-1.5 flex h-2 overflow-hidden rounded-full bg-muted" aria-label={`Salary distribution from ${cluster.salary_sample_size} postings`}>
+                      {cluster.salary_ranges.map((range, index) => range.count > 0 && (
+                        <div key={range.band} style={{ flexGrow: range.count, backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }} title={`${range.band}: ${range.count} (${range.pct}%)`} />
+                      ))}
+                    </div>
+                    <div className="text-muted-foreground mt-1.5 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
+                      {cluster.salary_ranges.map((range, index) => range.count > 0 && (
+                        <span key={range.band} className="flex items-center gap-1">
+                          <span className="size-1.5 shrink-0 rounded-full" style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }} />
+                          {range.band} {range.pct}%
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))}

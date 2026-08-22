@@ -34,7 +34,7 @@ jobs:
         env:
           DATA_BRANCH: ${{ github.event.client_payload.data_branch || github.ref_name }}
         run: |
-          git -C hn-jobs-data remote set-url origin https://github.com/gantryops/hn-jobs-data.git
+          git -C hn-jobs-data remote set-url origin https://github.com/gantrydev/hn-jobs-data.git
           if git -C hn-jobs-data ls-remote --exit-code --heads origin "$DATA_BRANCH" >/dev/null; then
             git -C hn-jobs-data fetch --depth=1 origin "$DATA_BRANCH"
           else
