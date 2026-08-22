@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import type { TrendSeries } from "@/lib/fs-data"
-import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
+import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
 import { ArrowUp, ArrowDown, TrendingUp, TrendingDown, Minus, Layers, Sparkles } from "lucide-react"
 import { CHART_COLORS } from "@/lib/colors"
 
@@ -52,42 +52,42 @@ function normalizeTrendSeries(series: TrendSeries["series"]): TrendSeries["serie
 function TrendChart({ title, series, topN }: { title: string; series: TrendSeries; topN: number }) {
   const entries = Object.entries(normalizeTrendSeries(series.series))
   const latestDate = entries.flatMap(([, pts]) => pts.map((p) => p.date)).sort().at(-1)
-  const ranked = entries.map(([name, pts]) => ({ name, latestCount: latestDate ? (pts.find((p) => p.date === latestDate)?.count ?? 0) : 0 })).sort((a, b) => b.latestCount - a.latestCount).slice(0, topN)
+  const ranked = entries.map(([name, pts]) => ({ name, latestPct: latestDate ? (pts.find((p) => p.date === latestDate)?.pct ?? 0) : 0 })).sort((a, b) => b.latestPct - a.latestPct).slice(0, topN)
   const topNames = new Set(ranked.map((r) => r.name))
   const dateSet = new Set<string>()
   for (const [name, pts] of entries) { if (topNames.has(name)) for (const p of pts) dateSet.add(p.date) }
   const dates = [...dateSet].sort()
-  const chartData = dates.map((date) => { const row: Record<string, string | number> = { date }; for (const [name, pts] of entries) { if (topNames.has(name)) { const pt = pts.find((p) => p.date === date); row[name] = pt?.count ?? 0 } } return row })
+  const chartData = dates.map((date) => { const row: Record<string, string | number> = { date }; for (const [name, pts] of entries) { if (topNames.has(name)) { const pt = pts.find((p) => p.date === date); row[name] = pt?.pct ?? 0 } } return row })
 
   return (
     <Card>
-      <CardHeader><CardTitle>{title}</CardTitle></CardHeader>
+      <CardHeader><CardTitle>{title}</CardTitle><CardDescription>Share of job posts from the latest run each month</CardDescription></CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={350}>
-          <AreaChart data={chartData}>
-            <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-            <YAxis />
+          <LineChart data={chartData}>
+            <XAxis dataKey="date" tick={{ fill: "var(--muted-foreground)", fontSize: 12 }} tickFormatter={(date: string) => date.slice(0, 7)} />
+            <YAxis tick={{ fill: "var(--muted-foreground)", fontSize: 12 }} tickFormatter={(value: number) => `${value}%`} />
             <Tooltip content={({ payload, label }) => {
               if (!payload?.length) return null
               const rankOrder = ranked.map((r) => r.name)
               const sorted = [...payload].sort((a, b) => rankOrder.indexOf(a.name as string) - rankOrder.indexOf(b.name as string))
               return (
                 <div className="rounded-md border border-border bg-card p-3 shadow-md">
-                  <p className="mb-2 text-xs font-medium">{label}</p>
+                  <p className="mb-2 text-xs font-medium">{String(label).slice(0, 7)}</p>
                   {sorted.map((entry) => (
                     <div key={entry.name} className="flex items-center gap-2 text-xs">
                       <div className="h-2 w-2 rounded-sm" style={{ backgroundColor: entry.color as string }} />
                       <span className="text-muted-foreground">{entry.name}</span>
-                      <span className="ml-auto font-medium">{entry.value}</span>
+                      <span className="ml-auto font-medium">{entry.value}%</span>
                     </div>
                   ))}
                 </div>
               )
             }} />
-            {[...ranked].reverse().map((item, i) => (
-              <Area key={item.name} type="monotone" dataKey={item.name} stackId="1" fill={CHART_COLORS[(ranked.length - 1 - i) % CHART_COLORS.length]} stroke={CHART_COLORS[(ranked.length - 1 - i) % CHART_COLORS.length]} fillOpacity={0.4} />
+            {ranked.map((item, i) => (
+              <Line key={item.name} type="linear" dataKey={item.name} stroke={CHART_COLORS[i % CHART_COLORS.length]} strokeWidth={2} dot={{ r: 3 }} />
             ))}
-          </AreaChart>
+          </LineChart>
         </ResponsiveContainer>
         <div className="mt-3 flex flex-wrap gap-3">
           {ranked.map((item, i) => (

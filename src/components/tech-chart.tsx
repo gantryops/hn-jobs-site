@@ -21,9 +21,10 @@ export function TechChart({ data, onBarClick, selectedBar }: TechChartProps) {
           }
         }}
       >
-        <XAxis type="number" />
-        <YAxis type="category" dataKey="name" width={"auto"} tick={{ fontSize: 12 }} />
+        <XAxis type="number" tick={{ fill: "var(--muted-foreground)" }} />
+        <YAxis type="category" dataKey="name" width={"auto"} tick={{ fill: "var(--muted-foreground)", fontSize: 12 }} />
         <Tooltip
+          contentStyle={{ backgroundColor: "var(--card)", borderColor: "var(--border)", color: "var(--card-foreground)" }}
           formatter={(value, _name, props) => {
             const pct = (props.payload as { pct?: number })?.pct
             return [`${value}${pct != null ? ` (${pct}%)` : ""}`, "Count"]

@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { ThemeToggle } from "@/components/theme-toggle"
 import { cn } from "@/lib/utils"
 
 const links = [
@@ -41,6 +42,7 @@ export function Nav() {
           >
             RSS
           </a>
+          <ThemeToggle />
         </div>
       </nav>
     </header>
